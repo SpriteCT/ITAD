@@ -1,0 +1,38 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+- job_name: nginx_logs
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: nginx
+      __path__: /var/log/app/nginx.log
+
+  pipeline_stages:
+    - regex:
+        expression:
+          (?P<ip>[\d\.]+) - - \[(?P<time>.*?)\] "(?P<method>\w+) (?P<url>.*?) HTTP/(?P<http_version>[\d\.]+)" (?P<status>\d+) (?P<size>\d+) "(?P<referrer>.*?)" "(?P<user_agent>.*?)"
+    - timestamp:
+        format: 02/Jan/2006:15:04:05 -0700
+        source: time
+        location: Moscow/Europe
+    - labels:
+        ip:  
+        method:  
+        url:  
+        http_version:  
+        status:  
+        referrer:  
+        user_agent:
+    - labeldrop:
+        - filename
+        - time

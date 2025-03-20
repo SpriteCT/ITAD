@@ -1,0 +1,61 @@
+version: "3.3"
+
+services:
+  logs_generator:
+    container_name: logs_app
+    build:
+      dockerfile: Dockerfile
+      context: ./logs_generator
+    volumes:
+      - app_logs:/app/log
+    networks:
+      - app
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: loki
+    ports:
+      - 3100:3100
+    command: -config.file=/etc/loki/loki.yaml
+    volumes:
+      - ./loki.yaml:/etc/loki/loki.yaml
+    networks:
+      - app
+
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:3.0.0
+    volumes:
+      - ./promtail-local-config.yml:/etc/promtail/config.yml
+      - app_logs:/var/log/app
+    command: -config.file=/etc/promtail/config.yml
+    restart: always
+    depends_on:
+      - logs_generator
+      - loki
+    networks:
+      - app
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:11.0.0
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    depends_on:
+      - loki
+    networks:
+      - app
+
+volumes:
+  app_logs: {}
+  loki_data: {}
+  grafana_data: {}
+
+networks:
+  app: {}

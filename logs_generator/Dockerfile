@@ -1,0 +1,11 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY main.py /app/
+
+RUN mkdir -p log
+
+RUN chmod +x /app/main.py
+
+CMD ["python", "/app/main.py"]
