@@ -24,6 +24,10 @@ scrape_configs:
     - timestamp:
         format: RFC3339
         source: time
+    - geoip:
+        db: /usr/share/GeoLite2-City.mmdb
+        db_type: city
+        source: ip
     - labels:
         ip:  
         method:  

@@ -3,45 +3,60 @@ from datetime import datetime
 from time import sleep
 import os
 
-# Создание папки, если её нет
+# Создание папки логов, если её нет
 log_dir = "log"
-log_file = os.path.join(log_dir, "nginx.log")
 os.makedirs(log_dir, exist_ok=True)
 
-# Функция генерации случайного IP-адреса
-def random_ip():
-    return ".".join(str(random.randint(0, 255)) for _ in range(4))
+nginx_log_file = os.path.join(log_dir, "nginx.log")
 
-# Варианты HTTP-методов, URL и кодов состояния
-methods = ["GET", "POST", "DELETE", "PUT"]
-urls = ["/", "/index.html", "/login", "/api/data", "/api/user/123", "/images/logo.png", "/api/logout", "/profile"]
-statuses = [200, 201, 301, 302, 400, 401, 403, 404, 500]
-referrers = ["http://example.com/", "http://example.com/home", "http://example.com/login", "http://example.com/profile", "-"]
-user_agents = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 12; Pixel 6) Chrome/120.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Firefox/115.0",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Safari/537.36"
-]
+# Функция загрузки обычных данных из файла
+def load_data(filename):
+    with open(filename, "r", encoding="utf-8") as file:
+        return [line.strip() for line in file.readlines() if line.strip()]
+
+# Функция загрузки данных с весами
+def load_weighted_data(filename):
+    weighted_data = []
+    with open(filename, "r", encoding="utf-8") as file:
+        for line in file:
+            parts = line.strip().split()
+            if len(parts) == 2 and parts[1].isdigit():
+                value, weight = parts[0], int(parts[1])
+                weighted_data.extend([value] * weight)
+    return weighted_data
+
+# Загрузка данных из файлов
+ip_addresses = load_data("data/ip_addresses.txt")
+methods = load_data("data/methods.txt")
+urls = load_weighted_data("data/urls.txt")
+statuses = load_weighted_data("data/statuses.txt")  # теперь со взвешенными значениями
+referrers = load_weighted_data("data/referrers.txt")  # только рефереры с весами
+user_agents = load_data("data/user_agents.txt")
+
+# Назначение user-agent для каждого IP
+ip_user_agents = {ip: random.choice(user_agents) for ip in ip_addresses}
+
+# Функция генерации логов для Nginx
+def generate_nginx_log():
+    ip = random.choice(ip_addresses)
+    next_url = random.choice(urls)
+    user_agent = ip_user_agents[ip]
+    referrer = random.choice(referrers)
+    status = random.choice(statuses)
+
+    log_time = datetime.now()
+    log_entry = (
+        f"{ip} - - [{log_time.strftime('%d/%b/%Y:%H:%M:%S +0300')}] "
+        f"\"{random.choice(methods)} {next_url} HTTP/1.1\" {status} {random.randint(100, 5000)} "
+        f"\"{referrer}\" \"{user_agent}\""
+    )
+
+    # Запись в файл
+    with open(nginx_log_file, "a+") as file:
+        file.write(log_entry + '\n')
 
 print("Началась генерация логов.")
 
-try:
-    while True:
-        log_time = datetime.now()
-        log_entry = (
-            f"{random_ip()} - - [{log_time.strftime('%d/%b/%Y:%H:%M:%S +0300')}] "
-            f"\"{random.choice(methods)} {random.choice(urls)} HTTP/1.1\" {random.choice(statuses)} {random.randint(100, 5000)} "
-            f"\"{random.choice(referrers)}\" \"{random.choice(user_agents)}\""
-        )
-
-        # Запись в файл
-        with open(log_file, "a+") as file:
-            file.write(log_entry + '\n')
-
-        # Случайная задержка от 0.1 до 5 секунд
-        sleep(random.uniform(1, 10))
-
-except KeyboardInterrupt:
-    print("\nГенерация логов остановлена.")
+while True:
+    generate_nginx_log()
+    sleep(random.uniform(0.1, 2))
