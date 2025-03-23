@@ -28,7 +28,7 @@ services:
     volumes:
       - ./promtail-local-config.yml:/etc/promtail/config.yml
       - app_logs:/var/log/app
-    command: -config.file=/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml --inspect
     restart: always
     depends_on:
       - logs_generator
@@ -40,13 +40,14 @@ services:
     container_name: grafana
     image: grafana/grafana:11.0.0
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./grafana/grafana.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards/
     depends_on:
       - loki
     networks:

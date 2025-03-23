@@ -22,9 +22,8 @@ scrape_configs:
         expression:
           (?P<ip>[\d\.]+) - - \[(?P<time>.*?)\] "(?P<method>\w+) (?P<url>.*?) HTTP/(?P<http_version>[\d\.]+)" (?P<status>\d+) (?P<size>\d+) "(?P<referrer>.*?)" "(?P<user_agent>.*?)"
     - timestamp:
-        format: 02/Jan/2006:15:04:05 -0700
+        format: RFC3339
         source: time
-        location: Moscow/Europe
     - labels:
         ip:  
         method:  
