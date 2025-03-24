@@ -39,3 +39,36 @@ scrape_configs:
     - labeldrop:
         - filename
         - time
+
+- job_name: else_logs
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: else
+      __path__: /var/log/app/else.log
+
+  pipeline_stages:
+    - regex:
+        expression:
+          \[(?P<ip>[\d\.]+)\] \[(?P<user>.*?)\] \[(?P<time>.*?)\] \["(?P<method>\w+) (?P<url>.*?) HTTP/(?P<http_version>[\d\.]+)"\] \[(?P<status>\d+)\] \[(?P<size>\d+)\] \["(?P<referrer>.*?)"\] \["(?P<session>.*?)"\] \[(?P<exec_time>.*?)\] \[(?P<request_id>.*?)\]
+    - timestamp:
+        format: "2006/01/02 15:04:05"
+        source: time
+    - geoip:
+        db: /usr/share/GeoLite2-City.mmdb
+        db_type: city
+        source: ip
+    - labels:
+        ip:  
+        user:  
+        method:  
+        url:  
+        status:  
+        referrer:  
+        session:  
+        exec_time:  
+        request_id:
+    - labeldrop:
+        - filename
+        - time

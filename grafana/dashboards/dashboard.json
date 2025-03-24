@@ -18,6 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 2,
   "links": [],
   "panels": [
     {
@@ -228,8 +229,10 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "green",
+            "mode": "shades"
           },
+          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -240,7 +243,7 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 999.9997
               }
             ]
           }
@@ -266,6 +269,7 @@
             "count"
           ],
           "fields": "/^Value \\#A$/",
+          "limit": 10,
           "values": true
         },
         "showUnfilled": true,
@@ -279,13 +283,27 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "editorMode": "code",
-          "expr": "topk(10, sum by (geoip_country_name) (\r\n    count_over_time({job=\"nginx\", geoip_country_name!=\"\"} [$__range])\r\n))",
+          "editorMode": "builder",
+          "expr": "topk(10, sum by(geoip_country_name) (count_over_time({job=\"nginx\", geoip_country_name!=\"\"} [$__range])))",
           "queryType": "instant",
           "refId": "A"
         }
       ],
       "title": "TOP 10",
+      "transformations": [
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": true,
+                "field": "Value #A"
+              }
+            ]
+          }
+        }
+      ],
       "type": "bargauge"
     },
     {
@@ -433,14 +451,14 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-1h",
     "to": "now"
   },
   "timeRangeUpdatedDuringEditOrView": false,
   "timepicker": {},
   "timezone": "browser",
-  "title": "123",
-  "uid": "eegpm188qdjwgb",
-  "version": 1,
+  "title": "1231",
+  "uid": "eegpm188qdjwgb1",
+  "version": 2,
   "weekStart": ""
 }
